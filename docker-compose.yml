@@ -1,0 +1,54 @@
+# uchat-backend/docker-compose.yml
+version: '3.9'
+
+services:
+  backend:
+    container_name: thoth-server
+    build:
+      context: .
+    ports:
+      - '3001:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run start:dev
+    depends_on:
+      - db
+    environment:
+      - PG_HOST=db
+      - PG_PORT=5432
+      - PG_USER=thoth
+      - PG_PASSWORD=thothpw
+      - PG_DB=thothdb
+      - JWT_SECRET=THOTH_SECRET
+
+  db:
+    image: postgres:15
+    container_name: thoth-db
+    restart: always
+    environment:
+      POSTGRES_USER: thoth
+      POSTGRES_PASSWORD: thothpw
+      POSTGRES_DB: thothdb
+    ports:
+      - '6543:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  opennamu:
+    build:
+      context: ./wiki
+      dockerfile: Dockerfile
+    container_name: opennamu
+    ports:
+      - '3003:3000'
+    volumes:
+      - ./wiki:/app
+    environment:
+      - ONO_PORT=3000
+      - ONO_LANG=ko-KR
+
+volumes:
+  pgdata:
+  opennamu-data:
